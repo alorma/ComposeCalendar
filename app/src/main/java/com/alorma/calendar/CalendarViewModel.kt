@@ -12,14 +12,15 @@ import java.time.format.TextStyle
 import java.util.Locale
 
 class CalendarViewModel(
-  private val clock: Clock,
+  clock: Clock,
   private val locale: Locale,
 ) : ViewModel() {
 
+  private var yearMonth: YearMonth = YearMonth.now(clock)
   private val _state: MutableStateFlow<MonthData?> = MutableStateFlow(null)
   val state: StateFlow<MonthData?> = _state
 
-  suspend fun load(yearMonth: YearMonth = YearMonth.now(clock)) = withContext(Dispatchers.IO) {
+  suspend fun load() = withContext(Dispatchers.IO) {
     val firstDayOfMonth = yearMonth.atDay(1)
     val lastDayOfMonth = yearMonth.atEndOfMonth()
 
@@ -30,7 +31,7 @@ class CalendarViewModel(
 
     val allDays = daysOfMonth.toMutableList()
 
-    // Days of past month
+    // Days of previous month
     DayOfWeek.values().forEach { dayOfWeek ->
       if (dayOfWeek.value < firstDayOfWeekOnMonth.value) {
         val offset = (DayOfWeek.values().size - (DayOfWeek.values().size - dayOfWeek.value))
@@ -41,7 +42,7 @@ class CalendarViewModel(
     // Days of next month
     DayOfWeek.values().forEach { dayOfWeek ->
       if (dayOfWeek.value > lastDayOfWeekOnMonth.value) {
-        val offset = dayOfWeek.value - 1
+        val offset = dayOfWeek.value - lastDayOfWeekOnMonth.value
         allDays.add(allDays.size, lastDayOfMonth.plusDays(offset.toLong()))
       }
     }
@@ -49,8 +50,8 @@ class CalendarViewModel(
     // Fill 6th row ?
     if (allDays.size / 7 == 5) {
       DayOfWeek.values().forEach { dayOfWeek ->
-        val offset = dayOfWeek.value - 1
-        allDays.add(allDays.size, lastDayOfMonth.plusWeeks(1).plusDays(offset.toLong()))
+        val offset = DayOfWeek.values().size - (lastDayOfWeekOnMonth.value) + dayOfWeek.value
+        allDays.add(allDays.size, yearMonth.plusMonths(1).atDay(offset))
       }
     }
 
@@ -66,6 +67,16 @@ class CalendarViewModel(
       DayOfWeek.values().toList().sortedBy { it.value }.map { it.getDisplayName(TextStyle.NARROW, locale) },
       days
     )
+  }
+
+  suspend fun decreaseMonth() {
+    yearMonth = yearMonth.minusMonths(1)
+    load()
+  }
+
+  suspend fun increaseMonth() {
+    yearMonth = yearMonth.plusMonths(1)
+    load()
   }
 }
 

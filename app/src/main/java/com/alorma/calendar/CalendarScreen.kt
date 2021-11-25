@@ -10,16 +10,24 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 
 @ExperimentalFoundationApi
 @Composable
@@ -30,6 +38,8 @@ fun CalendarScreen(
     calendarViewModel.load()
   }
 
+  val coroutineScope = rememberCoroutineScope()
+
   val state by calendarViewModel.state.collectAsState()
 
   val monthData = state
@@ -38,17 +48,11 @@ fun CalendarScreen(
     Column(
       modifier = Modifier.fillMaxSize(),
     ) {
-      Box(
-        modifier = Modifier
-          .heightIn(64.dp)
-          .fillMaxWidth(),
-        contentAlignment = Alignment.Center,
-      ) {
-        Text(
-          text = monthData.monthName,
-          fontWeight = FontWeight.Bold,
-        )
-      }
+      MonthHeader(
+        monthData = monthData,
+        onPreviousClick = { coroutineScope.launch { calendarViewModel.decreaseMonth() } },
+        onNextClick = { coroutineScope.launch { calendarViewModel.increaseMonth() } },
+      )
       Row(
         modifier = Modifier.fillMaxWidth(),
       ) {
@@ -86,6 +90,33 @@ fun CalendarScreen(
           }
         }
       }
+    }
+  }
+}
+
+@Composable
+private fun MonthHeader(
+  monthData: MonthData,
+  onPreviousClick: () -> Unit,
+  onNextClick: () -> Unit,
+) {
+  Row(
+    modifier = Modifier
+      .heightIn(64.dp)
+      .fillMaxWidth(),
+    verticalAlignment = Alignment.CenterVertically,
+  ) {
+    IconButton(onClick = onPreviousClick) {
+      Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "Previous month")
+    }
+    Text(
+      modifier = Modifier.weight(1f),
+      text = monthData.monthName,
+      fontWeight = FontWeight.Bold,
+      textAlign = TextAlign.Center,
+    )
+    IconButton(onClick = onNextClick) {
+      Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "Next month")
     }
   }
 }
