@@ -10,14 +10,13 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,17 +25,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
-import androidx.compose.ui.tooling.preview.datasource.CollectionPreviewParameterProvider
 import androidx.compose.ui.unit.dp
-import com.alorma.calendar.ui.theme.CalendarTheme
+import com.alorma.calendar.components.CalendarDayItem
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 
+@ExperimentalMaterial3Api
 @ExperimentalFoundationApi
 @Composable
 fun CalendarScreen(
@@ -53,66 +48,41 @@ fun CalendarScreen(
   val monthData = state
 
   if (monthData != null) {
-    Column(
-      modifier = Modifier.fillMaxSize(),
-    ) {
-      MonthHeader(
-        monthData = monthData,
-        onPreviousClick = { coroutineScope.launch { calendarViewModel.decreaseMonth() } },
-        onNextClick = { coroutineScope.launch { calendarViewModel.increaseMonth() } },
-      )
-      Row(
-        modifier = Modifier.fillMaxWidth(),
+    Scaffold {
+      Column(
+        modifier = Modifier.fillMaxSize(),
       ) {
-        monthData.dayNames.forEach { dayName ->
-          Box(
-            modifier = Modifier
-              .heightIn(64.dp)
-              .weight(1f),
-            contentAlignment = Alignment.Center,
-          ) {
-            Text(
-              text = dayName,
-              fontWeight = FontWeight.Bold,
-            )
+        MonthHeader(
+          monthData = monthData,
+          onPreviousClick = { coroutineScope.launch { calendarViewModel.decreaseMonth() } },
+          onNextClick = { coroutineScope.launch { calendarViewModel.increaseMonth() } },
+        )
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+        ) {
+          monthData.dayNames.forEach { dayName ->
+            Box(
+              modifier = Modifier
+                .heightIn(64.dp)
+                .weight(1f),
+              contentAlignment = Alignment.Center,
+            ) {
+              Text(
+                text = dayName,
+                fontWeight = FontWeight.Bold,
+              )
+            }
+          }
+        }
+        LazyVerticalGrid(
+          cells = GridCells.Fixed(7)
+        ) {
+
+          items(monthData.days) { day ->
+            CalendarDayItem(day)
           }
         }
       }
-      LazyVerticalGrid(
-        cells = GridCells.Fixed(7)
-      ) {
-
-        items(monthData.days) { day ->
-          CalendarDayItem(day)
-        }
-      }
-    }
-  }
-}
-
-@Composable
-private fun CalendarDayItem(
-  day: DayData,
-  modifier: Modifier = Modifier,
-  onClick: (DayData) -> Unit = {},
-) {
-  Surface(
-    modifier = modifier.heightIn(64.dp),
-    shape = if (day.isToday) RoundedCornerShape(8.dp) else RectangleShape,
-    tonalElevation = if (day.isToday) 1.dp else 0.dp,
-    onClick = { onClick(day) },
-  ) {
-    Box(
-      contentAlignment = Alignment.Center,
-    ) {
-      Text(
-        text = day.value,
-        color = if (day.isCurrentMonth) {
-          MaterialTheme.colorScheme.onBackground
-        } else {
-          MaterialTheme.colorScheme.onBackground.copy(alpha = 0.60f)
-        }
-      )
     }
   }
 }
@@ -141,34 +111,5 @@ private fun MonthHeader(
     IconButton(onClick = onNextClick) {
       Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "Next month")
     }
-  }
-}
-
-class DayProvider : CollectionPreviewParameterProvider<DayData>(
-  listOf(
-    DayData(
-      localDate = LocalDate.now(),
-      isToday = false,
-      value = "23",
-      isCurrentMonth = false,
-    ),
-    DayData(
-      localDate = LocalDate.now(),
-      isToday = true,
-      value = "23",
-      isCurrentMonth = true,
-    )
-  )
-)
-
-@Preview(
-  heightDp = 80,
-  widthDp = 80,
-  showBackground = true,
-)
-@Composable
-fun DayPreview(@PreviewParameter(provider = DayProvider::class) dayData: DayData) {
-  CalendarTheme {
-    CalendarDayItem(day = dayData)
   }
 }

@@ -1,5 +1,6 @@
 package com.alorma.calendar
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -56,13 +57,22 @@ class CalendarViewModel(
       }
     }
 
+    val selectedDays = allDays.shuffleDays(10)
+
+    val selectedDaysText = selectedDays.joinToString(separator = "\n") {
+      it.toString()
+    }
+
+    Log.i("Alorma", selectedDaysText)
+
     val today = LocalDate.now(clock)
     val days = allDays.map { localDate: LocalDate ->
       DayData(
         value = localDate.dayOfMonth.toString(),
         isCurrentMonth = localDate.monthValue == yearMonth.monthValue,
         localDate = localDate,
-        isToday = localDate.isEqual(today)
+        isToday = localDate.isEqual(today),
+        hasEvent = localDate in selectedDays,
       )
     }
 
@@ -71,6 +81,12 @@ class CalendarViewModel(
       DayOfWeek.values().toList().sortedBy { it.value }.map { it.getDisplayName(TextStyle.NARROW, locale) },
       days
     )
+  }
+
+  private fun List<LocalDate>.shuffleDays(num: Int): Set<LocalDate> {
+    val selectedDays = toMutableList()
+    selectedDays.shuffle()
+    return selectedDays.take(num).toSet()
   }
 
   suspend fun decreaseMonth() {
@@ -94,5 +110,6 @@ data class DayData(
   val localDate: LocalDate,
   val isToday: Boolean,
   val value: String,
-  val isCurrentMonth: Boolean
+  val isCurrentMonth: Boolean,
+  val hasEvent: Boolean
 )
