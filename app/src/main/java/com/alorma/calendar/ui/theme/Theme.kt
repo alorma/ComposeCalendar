@@ -2,6 +2,7 @@ package com.alorma.calendar.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -70,7 +71,7 @@ private val DarkThemeColors = darkColorScheme(
 
 @Composable
 fun CalendarTheme(
-  isDark: Boolean = false,
+  isDark: Boolean = isSystemInDarkTheme(),
   content: @Composable () -> Unit
 ) {
   val colors = if (Build.VERSION.SDK_INT > Build.VERSION_CODES.S) {

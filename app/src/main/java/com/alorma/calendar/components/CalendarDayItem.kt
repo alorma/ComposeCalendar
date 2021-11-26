@@ -106,11 +106,24 @@ class DayProvider : CollectionPreviewParameterProvider<DayData>(
 @Preview(
   heightDp = 80,
   widthDp = 80,
-  showBackground = true,
 )
 @Composable
-fun DayPreview(@PreviewParameter(provider = DayProvider::class) dayData: DayData) {
+fun DayPreviewLight(
+  @PreviewParameter(provider = DayProvider::class) dayData: DayData
+) {
   CalendarTheme {
+    CalendarDayItem(day = dayData)
+  }
+}
+@Preview(
+  heightDp = 80,
+  widthDp = 80,
+)
+@Composable
+fun DayPreviewDark(
+  @PreviewParameter(provider = DayProvider::class) dayData: DayData
+) {
+  CalendarTheme(true) {
     CalendarDayItem(day = dayData)
   }
 }
