@@ -7,12 +7,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import java.time.Clock
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.TextStyle
 import java.util.Locale
 
 class CalendarViewModel(
-  clock: Clock,
+  private val clock: Clock,
   private val locale: Locale,
 ) : ViewModel() {
 
@@ -55,10 +56,13 @@ class CalendarViewModel(
       }
     }
 
-    val days = allDays.map {
+    val today = LocalDate.now(clock)
+    val days = allDays.map { localDate: LocalDate ->
       DayData(
-        value = it.dayOfMonth.toString(),
-        isCurrentMonth = it.monthValue == yearMonth.monthValue
+        value = localDate.dayOfMonth.toString(),
+        isCurrentMonth = localDate.monthValue == yearMonth.monthValue,
+        localDate = localDate,
+        isToday = localDate.isEqual(today)
       )
     }
 
@@ -87,6 +91,8 @@ data class MonthData(
 )
 
 data class DayData(
+  val localDate: LocalDate,
+  val isToday: Boolean,
   val value: String,
   val isCurrentMonth: Boolean
 )
